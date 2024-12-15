@@ -1,0 +1,52 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Building
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build all programs
+        run: |
+          gcc -o 01.IO_flush/1.2.Automation/automation 01.IO_flush/1.2.Automation/automation.c || exit 1
+          gcc -o 02.Memory_Overcommit/Test/test 02.Memory_Overcommit/Test/test.c || exit 1
+
+      - name: Upload executables
+        uses: actions/upload-artifact@v4
+        with:
+          name: executables
+          path: |
+            ${{ github.workspace }}/01.IO_flush/1.2.Automation
+            ${{ github.workspace }}/02.Memory_Overcommit/Test
+
+  test:
+    name: Testing
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download executables
+        uses: actions/download-artifact@v4
+        with:
+          name: executables
+
+      - name: Run short-running programs
+        run: |
+          cd 01.IO_flush/1.2.Automation
+          chmod 777 automation
+          ./automation
