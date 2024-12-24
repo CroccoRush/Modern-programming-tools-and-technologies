@@ -17,11 +17,20 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpng-dev
 
       - name: Build all programs
         run: |
           gcc -o 01.IO_flush/1.2.Automation/automation 01.IO_flush/1.2.Automation/automation.c || exit 1
           gcc -o 02.Memory_Overcommit/Test/test 02.Memory_Overcommit/Test/test.c || exit 1
+          make -C ./03.Fractal/Program release || exit 1
+          make -C ./03.Fractal/Program debug_test || exit 1
 
       - name: Upload executables
         uses: actions/upload-artifact@v4
@@ -30,6 +39,7 @@ jobs:
           path: |
             ${{ github.workspace }}/01.IO_flush/1.2.Automation
             ${{ github.workspace }}/02.Memory_Overcommit/Test
+            ${{ github.workspace }}/03.Fractal/Program
 
   test:
     name: Testing
@@ -50,3 +60,15 @@ jobs:
           cd 01.IO_flush/1.2.Automation
           chmod 777 automation
           ./automation
+
+      - name: Run 03 exercise test
+        run: |
+          cd 03.Fractal/Program
+          chmod 777 debug_test
+          ./debug_test
+
+      - name: Run 03 exercise main
+        run: |
+          cd 03.Fractal/Program
+          chmod 777 release
+          ./release
